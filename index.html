@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celator | Neutralización Activa de Phishing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        .gradient-text { background: linear-gradient(90deg, #2563eb, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+        /* ANIMACIONES DEL DASHBOARD OSCURO */
+        @keyframes shadow-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(37, 99, 235, 0.05); transform: translateY(0); }
+            50% { box-shadow: 0 0 50px rgba(37, 99, 235, 0.25); transform: translateY(-2px); }
+        }
+        .animate-shadow-pulse { animation: shadow-pulse 6s ease-in-out infinite; }
+
+        @keyframes ambient-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        .animate-ambient-pulse { animation: ambient-pulse 8s ease-in-out infinite; }
+
+        @keyframes scan-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; text-shadow: 0 0 8px rgba(96, 165, 250, 0.5); }
+        }
+        .animate-scan-pulse { animation: scan-pulse 3s ease-in-out infinite; }
+
+        .matrix-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ctext x='10' y='20' font-family='monospace' font-size='10' fill='rgba(147, 197, 253, 0.3)'%3E01011001%3C/text%3E%3Ctext x='30' y='40' font-family='monospace' font-size='10' fill='rgba(147, 197, 253, 0.2)'%3E10100110%3C/text%3E%3Ctext x='50' y='60' font-family='monospace' font-size='10' fill='rgba(147, 197, 253, 0.25)'%3E11001011%3C/text%3E%3Ctext x='10' y='80' font-family='monospace' font-size='10' fill='rgba(147, 197, 253, 0.15)'%3E00110101%3C/text%3E%3C/svg%3E");
+            animation: matrix-scroll 20s linear infinite;
+        }
+        @keyframes matrix-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 200px; }
+        }
+
+        /* --- NUEVAS ANIMACIONES DE ENTRADA (SCROLL & LOAD) --- */
+        
+        /* 1. Cambio sutil de color de fondo al cargar */
+        @keyframes intro-fade {
+            0% { background-color: #e2e8f0; } /* Inicia en un slate-200 sutil */
+            100% { background-color: #f8fafc; } /* Termina en slate-50 */
+        }
+        .bg-intro-anim {
+            animation: intro-fade 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* 2. Clases para revelar elementos al hacer scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            /* Curva Bezier para un frenado súper elegante y profesional */
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Utilidades para escalonar las animaciones (efecto cascada) */
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        @media (max-width: 768px) {
+            .active-mobile .absolute { transform: translateY(0) !important; }
+            /* En móviles reducimos el delay para que no se sienta lento */
+            .delay-100, .delay-200, .delay-300 { transition-delay: 0ms; } 
+        }
+    </style>
+</head>
+<body class="bg-intro-anim text-slate-900">
+
+    <nav class="flex justify-between items-center px-8 py-5 sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-slate-100 reveal active">
+        <div class="flex items-center gap-3">
+            <img src="img/logo.png" alt="Celator Logo" class="h-10 w-10 object-contain">
+            
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">CELATOR <span class="text-xs font-normal text-blue-600">v3.0.0</span></span>
+        </div>
+        <div class="hidden md:flex space-x-8 text-sm font-semibold text-slate-600">
+            <a href="#mision" class="hover:text-blue-600 transition">Misión</a>
+            <a href="#capacidades" class="hover:text-blue-600 transition">Capacidades</a>
+            <a href="#equipo" class="hover:text-blue-600 transition">Equipo</a>
+        </div>
+        <a href="#registro" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold hover:shadow-lg hover:shadow-blue-200 transition">Acceso Beta</a>
+    </nav>
+
+    <header id="mision" class="px-8 pt-20 pb-16 text-center max-w-4xl mx-auto">
+        <span class="text-blue-600 font-bold text-xs uppercase tracking-[0.2em] reveal">Totumo Threat Intelligence Presenta</span>
+        <h1 class="text-5xl md:text-7xl font-800 mt-4 leading-tight reveal delay-100">Limpiamos la web de <span class="gradient-text">amenazas reales.</span></h1>
+        <p class="text-lg text-slate-500 mt-8 leading-relaxed reveal delay-200">No solo emitimos alertas. Celator rastrea activamente suplantaciones de identidad y sitios de phishing para neutralizarlos mediante inteligencia ofensiva automatizada.</p>
+    </header>
+
+    <section id="capacidades" class="bg-slate-900 py-20 text-white overflow-hidden relative">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/0 to-slate-900/0 z-0 animate-ambient-pulse pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-8 grid lg:grid-cols-2 gap-16 items-center z-10 relative">
+            <div class="reveal">
+                <h2 class="text-3xl font-bold mb-6">IA Patrullando 24/7</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="text-blue-400 font-bold">01.</div>
+                        <p class="text-slate-400"><strong class="text-white">Escaneo Homográfico:</strong> Nuestra IA identifica variantes de dominio visualmente idénticas que engañan al público.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-blue-400 font-bold">02.</div>
+                        <p class="text-slate-400"><strong class="text-white">Neutralización Directa:</strong> Ejecutamos protocolos para derribar sitios maliciosos antes de que el primer usuario sea estafado.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-blue-400 font-bold">03.</div>
+                        <p class="text-slate-400"><strong class="text-white">Reportes de Riesgo:</strong> Generamos análisis técnicos detallados con justificación automática basada en IA.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 relative overflow-hidden animate-shadow-pulse z-10 reveal delay-200">
+                <div class="flex justify-between mb-4 px-2 z-20 relative">
+                    <div class="h-2 w-12 bg-slate-600 rounded-full"></div>
+                    <div class="h-2 w-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.7)] animate-pulse"></div>
+                </div>
+                <div class="space-y-3 z-20 relative">
+                    <div class="h-32 bg-slate-900/80 backdrop-blur-sm rounded-xl flex items-center justify-center border border-slate-700/50 relative overflow-hidden">
+                        <div class="matrix-bg absolute inset-0 pointer-events-none opacity-10"></div>
+                        <span class="text-xs text-blue-400/80 tracking-widest uppercase font-mono animate-scan-pulse">Escaneando dominios críticos...</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="h-16 bg-slate-700/30 rounded-lg p-3 border border-slate-700/30">
+                            <div class="text-[10px] text-slate-500 uppercase">Acierto IA</div>
+                            <div class="text-xl font-bold text-blue-400">95%</div>
+                        </div>
+                        <div class="h-16 bg-slate-700/30 rounded-lg p-3 border-l-2 border-emerald-500/80 bg-gradient-to-r from-emerald-900/10 to-transparent">
+                            <div class="text-[10px] text-slate-500 uppercase">Estado</div>
+                            <div class="text-xl font-bold text-emerald-500">Activo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="modulos" class="py-24 px-8 max-w-7xl mx-auto border-b border-slate-100">
+        <div class="text-center mb-16 reveal">
+            <span class="text-blue-600 font-bold text-xs uppercase tracking-widest">Suite de Herramientas</span>
+            <h2 class="text-4xl font-extrabold mt-2 text-slate-900 tracking-tight">El Arsenal de Celator</h2>
+            <p class="text-slate-500 mt-4 max-w-2xl mx-auto">Nuestra plataforma integra múltiples vectores de análisis para garantizar una cobertura de 360 grados sobre los activos de tu empresa.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 group reveal">
+                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors duration-300">
+                    <svg class="w-7 h-7 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-slate-800">Homograph Scanner</h3>
+                <p class="text-sm text-slate-500 leading-relaxed mb-4">El motor de Celator genera más de 10,000 variantes tipográficas (typosquatting) de tu dominio principal para cazar sitios de suplantación antes de que logren indexarse en la web.</p>
+                <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">Módulo Activo</span>
+            </div>
+
+            <div class="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-orange-400 transition-all duration-300 group reveal delay-100">
+                <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition-colors duration-300">
+                    <svg class="w-7 h-7 text-orange-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-slate-800">Network Stress Test</h3>
+                <p class="text-sm text-slate-500 leading-relaxed mb-4">Simulamos cargas sintéticas masivas y ataques de concurrencia de forma controlada. Identificamos cuellos de botella en balanceadores de carga y firewalls antes de que lo haga un atacante real.</p>
+                <span class="text-xs font-bold text-orange-500 uppercase tracking-widest">Módulo Activo</span>
+            </div>
+
+            <div class="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-emerald-400 transition-all duration-300 group reveal delay-200">
+                <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-300">
+                    <svg class="w-7 h-7 text-emerald-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-slate-800">Auditoría IA Automatizada</h3>
+                <p class="text-sm text-slate-500 leading-relaxed mb-4">Cada dominio sospechoso es perfilado. La inteligencia artificial recopila capturas de pantalla, evalúa el nivel de riesgo y genera un informe forense detallado con los indicadores clave de compromiso.</p>
+                <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Módulo Activo</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="equipo" class="py-24 px-8 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal">
+            <span class="text-blue-600 font-bold text-xs uppercase tracking-widest">Trayectoria y Experticia</span>
+            <h2 class="text-4xl font-extrabold mt-2 italic text-slate-800 tracking-tight">Mentes detrás de Celator</h2>
+            <p class="text-slate-500 mt-4 max-w-2xl mx-auto italic">Un equipo de especialistas senior uniendo fuerzas para redefinir la seguridad digital.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer flex flex-col reveal" onclick="this.classList.toggle('active-mobile')">
+                <div class="relative aspect-[3/4] overflow-hidden">
+                    <img src="https://via.placeholder.com/600x800" alt="Gustavo Ampudia" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700">
+                    <div class="absolute inset-0 bg-slate-900/95 p-6 flex flex-col justify-end transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out">
+                        <div class="mb-4">
+                            <h4 class="text-blue-400 font-bold text-sm uppercase mb-3 tracking-widest">Experiencia Senior</h4>
+                            <ul class="text-white text-[13px] space-y-2 opacity-90">
+                                <li>• <strong class="text-blue-200">+6 años</strong> de trayectoria en producción audiovisual.</li>
+                                <li>• Clientes globales: <strong class="text-blue-200">Daiky Gamboa, Laura Mejia, Sebasscol</strong>.</li>
+                                <li>• Marcas de élite en Miami: <strong class="text-blue-200">E11even y L'Atelier</strong>.</li>
+                                <li>• Desarrollador Frontend enfocado en UX/UI para interfaces de IA.</li>
+                            </ul>
+                        </div>
+                        <div class="h-px bg-white/10 w-full mt-2 mb-3"></div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-center">Co-Founder @ TTI</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white border-t-4 border-blue-600 z-10 flex-1">
+                    <h3 class="font-bold text-xl uppercase tracking-tighter text-slate-800 leading-none">Gustavo Ampudia</h3>
+                    <p class="text-blue-600 text-[10px] font-extrabold uppercase tracking-widest mt-2">Audiovisual Producer & Frontend</p>
+                </div>
+            </div>
+
+            <div class="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer flex flex-col reveal delay-100" onclick="this.classList.toggle('active-mobile')">
+                <div class="relative aspect-[3/4] overflow-hidden">
+                    <img src="https://via.placeholder.com/600x800" alt="Gabriel Tapias" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700">
+                    <div class="absolute inset-0 bg-slate-900/95 p-6 flex flex-col justify-end transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out">
+                        <div class="mb-4">
+                            <h4 class="text-blue-400 font-bold text-sm uppercase mb-3 tracking-widest">Especialidad Técnica</h4>
+                            <ul class="text-white text-[13px] space-y-2 opacity-90">
+                                <li>• <strong class="text-blue-200">8+ años</strong> de experiencia en <strong class="text-blue-200">IBM y EY</strong>.</li>
+                                <li>• Campeón Nacional <strong class="text-blue-200">OEA Cyber Challenge 2023</strong>.</li>
+                                <li>• Arquitecto en seguridad y líder en integración de IA proactiva.</li>
+                            </ul>
+                        </div>
+                        <div class="h-px bg-white/10 w-full mt-2 mb-3"></div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-center">Co-Founder @ TTI</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white border-t-4 border-blue-600 z-10 flex-1">
+                    <h3 class="font-bold text-xl uppercase tracking-tighter text-slate-800 leading-none">Gabriel Tapias</h3>
+                    <p class="text-blue-600 text-[10px] font-extrabold uppercase tracking-widest mt-2">Tech Lead & Cybersecurity</p>
+                </div>
+            </div>
+
+            <div class="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer flex flex-col reveal delay-200" onclick="this.classList.toggle('active-mobile')">
+                <div class="relative aspect-[3/4] overflow-hidden">
+                    <img src="https://via.placeholder.com/600x800" alt="Nicolas Cardenas" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700">
+                    <div class="absolute inset-0 bg-slate-900/95 p-6 flex flex-col justify-end transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out text-white">
+                        <div class="mb-4">
+                            <h4 class="text-blue-400 font-bold text-sm uppercase mb-3 tracking-widest">Operaciones Digitales</h4>
+                            <ul class="text-[13px] space-y-2 opacity-90">
+                                <li>• Experto en SOC, monitoreo y respuesta ante incidentes.</li>
+                                <li>• Especialista en entornos <strong class="text-blue-200">Azure y QRadar</strong>.</li>
+                                <li>• Analista senior en gestión de infraestructuras críticas.</li>
+                            </ul>
+                        </div>
+                        <div class="h-px bg-white/10 w-full mt-2 mb-3"></div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-center">Cybersecurity Analyst @ TTI</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white border-t-4 border-blue-600 z-10 flex-1">
+                    <h3 class="font-bold text-xl uppercase tracking-tighter text-slate-800 leading-none">Nicolas Cardenas</h3>
+                    <p class="text-blue-600 text-[10px] font-extrabold uppercase tracking-widest mt-2">Especialista SOC & Azure</p>
+                </div>
+            </div>
+
+            <div class="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-500 hover:shadow-2xl cursor-pointer flex flex-col reveal delay-300" onclick="this.classList.toggle('active-mobile')">
+                <div class="relative aspect-[3/4] overflow-hidden">
+                    <img src="https://via.placeholder.com/600x800" alt="Jean Reveiz" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700">
+                    <div class="absolute inset-0 bg-slate-900/95 p-6 flex flex-col justify-end transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out text-white">
+                        <div class="mb-4">
+                            <h4 class="text-blue-400 font-bold text-sm uppercase mb-3 tracking-widest">Investigación Avanzada</h4>
+                            <ul class="text-[13px] space-y-2 opacity-90">
+                                <li>• <strong class="text-blue-200">10+ años</strong> de trayectoria forense e informática.</li>
+                                <li>• Experto perito en <strong class="text-blue-200">Auditorías de Seguridad y Pentesting</strong>.</li>
+                                <li>• Especialista autodidacta en caza de vulnerabilidades de alto riesgo.</li>
+                            </ul>
+                        </div>
+                        <div class="h-px bg-white/10 w-full mt-2 mb-3"></div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest text-center">Security Investigator @ TTI</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white border-t-4 border-blue-600 z-10 flex-1">
+                    <h3 class="font-bold text-xl uppercase tracking-tighter text-slate-800 leading-none">Jean Reveiz</h3>
+                    <p class="text-blue-600 text-[10px] font-extrabold uppercase tracking-widest mt-2">Pentester & Perito Forense</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="registro" class="bg-slate-50 py-20 border-t border-slate-200 text-center reveal">
+        <h2 class="text-2xl font-bold mb-6">Únete a la fase de validación</h2>
+        <p class="text-slate-500 mb-8">Estamos reclutando los primeros socios para la Beta Cerrada de Celator.</p>
+        <div class="max-w-md mx-auto px-4 flex gap-2">
+            <input type="email" placeholder="Email corporativo" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-600 transition">
+            <button class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition">Registrarme</button>
+        </div>
+        <p class="mt-12 text-xs text-slate-400">© 2026 Totumo Threat Intelligence. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -50px 0px', // Activa la animación un poco antes de que toque el fondo de la pantalla
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        // Dejamos de observar el elemento una vez que ya apareció
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Seleccionamos todos los elementos con la clase .reveal
+            document.querySelectorAll('.reveal').forEach((el) => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+<!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Celator | Inteligencia en Ciberseguridad</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        </style>
+    </head>
+    <body class="bg-white text-slate-900">
+
+        <nav class="flex justify-between items-center px-8 py-6 border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-50">
+            <div class="text-2xl font-bold tracking-tighter text-blue-600">CELATOR</div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
+                <a href="#inicio" class="hover:text-blue-600">Inicio</a>
+                <a href="#tecnologia" class="hover:text-blue-600">Tecnología</a>
+                <a href="#contacto" class="hover:text-blue-600">Contacto</a>
+            </div>
+
+        </nav>
+
+        <section id="inicio" class="px-8 py-20 lg:py-32 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+
+                <h1 class="text-5xl lg:text-7xl font-extrabold mt-6 leading-tight">La IA que <span class="text-blue-600">predice</span> el próximo ataque.</h1>
+                <p class="text-xl text-slate-500 mt-6 leading-relaxed">Celator utiliza modelos avanzados de Deep Learning para blindar infraestructuras digitales antes de que ocurra la vulneración.</p>
+                <div class="mt-10 flex space-x-4">
+                    <a href="#contacto" class="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-blue-200 transition">Explorar Proyecto</a>
+                </div>
+            </div>
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80" alt="Cybersecurity" class="rounded-3xl shadow-2xl">
+                <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl hidden md:block border border-slate-100">
+                    <p class="text-sm font-bold text-slate-400 uppercase">Uptime Garantizado</p>
+                    <p class="text-2xl font-bold text-emerald-500">99.9%</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tecnologia" class="bg-slate-900 py-24 text-white">
+            <div class="max-w-7xl mx-auto px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold">Defensa Proactiva</h2>
+                    <p class="text-slate-400 mt-4 max-w-2xl mx-auto">Nuestra arquitectura combina inteligencia artificial y monitoreo en tiempo real para una seguridad sin fricciones.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-8 border border-slate-800 rounded-3xl hover:border-blue-500 transition group">
+                        <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
+                            <svg class="w-6 h-6 text-blue-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Análisis Predictivo</h3>
+                        <p class="text-slate-400">Identificamos anomalías en el tráfico antes de que se conviertan en amenazas reales.</p>
+                    </div>
+                    <div class="p-8 border border-slate-800 rounded-3xl hover:border-blue-500 transition group">
+                        <div class="w-12 h-12 bg-emerald-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 transition">
+                            <svg class="w-6 h-6 text-emerald-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Respuesta Autónoma</h3>
+                        <p class="text-slate-400">Mitigación instantánea de ataques DDoS y Zero-Day sin intervención humana.</p>
+                    </div>
+                    <div class="p-8 border border-slate-800 rounded-3xl hover:border-blue-500 transition group">
+                        <div class="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition">
+                            <svg class="w-6 h-6 text-purple-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Monitoreo 24/7</h3>
+                        <p class="text-slate-400">Visualización completa de la salud de tu red a través de un dashboard intuitivo.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contacto" class="py-24 px-8 max-w-3xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-slate-900">¿Quieres ver a Celator en acción?</h2>
+            <p class="text-slate-500 mt-4 mb-10">Estamos aceptando un grupo limitado de empresas para nuestra fase Beta iniciada este diciembre.</p>
+            
+            <form action="#" class="grid grid-cols-1 gap-4">
+                <input type="email" placeholder="Correo institucional" class="px-6 py-4 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none">
+                <button class="bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                    Registrarme para la Beta
+                </button>
+            </form>
+            <p class="text-xs text-slate-400 mt-6">Al registrarte, aceptas nuestros términos de privacidad y uso de datos.</p>
+        </section>
+
+        <footer class="py-12 border-t border-slate-100 text-center text-slate-400 text-sm">
+            <p>&copy; 2025 Totumo Threat Intelligence - Celator Project</p>
+        </footer>
+
+    </body>
+    </html>
+     -->
